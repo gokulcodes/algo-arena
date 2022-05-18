@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+select {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .select-wrapper {
+    position: relative;
+  }
+  
+  .select-wrapper::after {
+    content: "▼";
+    opacity: 0.2;
+    font-size: 1rem;
+    top: 8px;
+    right: 20px;
+    position: absolute;
+  }
