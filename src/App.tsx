@@ -1,116 +1,118 @@
 import { useState } from 'react'
 
 interface tuple {
-  first: number
+  first:  number
   second: number
 }
 
 interface Lib {
-  name: string
+  name:   string
   theory: string
-  key: string
+  key:    string
 }
 
-let ROW: number = 26,
-  COL: number = 60
+let ROW: number = 26
+let COL: number = 60
+
+const axisDefault: tuple = { first: -1, second: -1 }
+const clog = (data: any, cond: boolean) => (cond && console.log(data)) || cond
+const graphDefault = new Array(ROW).fill(false).map(() => new Array(COL).fill(false))
 
 const AlgoLib: { [index: string]: Lib } = {
   bfs: {
     name: 'Breadth First Search',
     theory:
-      'Breadth First Search use a technique that visits the adjacent nodes of nodes to find the path. It is mainly used to find shortest distance between two points.',
+      'Breadth First Search use a technique that visits \
+      the adjacent nodes of nodes to find the path. It \
+      is mainly used to find shortest distance between two points.',
     key: 'bfs',
   },
 }
 
 function App() {
-  const [visited, setVisited] = useState<boolean[][]>(
-    new Array(ROW).fill(false).map(() => new Array(COL).fill(false)),
-  )
-  const [algo, setAlgo] = useState<string>('bfs')
-  const [current, setCurrent] = useState<tuple>({ first: -1, second: -1 })
-  const [source, setSouce] = useState<tuple>({
-    first: -1,
-    second: -1,
-  })
-  const [destination, setDestination] = useState<tuple>({
-    first: -1,
-    second: -1,
-  })
-  const [speed, setSpeed] = useState<number>(100)
+  const [visited, setVisited] = useState<boolean[][]>(graphDefault)
+  const [algo, setAlgo]       = useState<string>('bfs')
+  const [speed, setSpeed]     = useState<number>(100)
+  const [current, setCurrent] = useState<tuple>(axisDefault)
+  const [source, setSouce]    = useState<tuple>(axisDefault)
+  const [destination, setDestination] = useState<tuple>(axisDefault)
 
-  const sleep = (milliseconds: number) => {
-    return new Promise((resolve) => setTimeout(resolve, milliseconds))
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+  const newTuple = (fst: number, snd: number): tuple => {
+    return { first: fst, second: snd }
   }
 
+  const axisDefaultCheck = (axis: tuple): boolean =>
+    axis.first === -1 || axis.second === -1
+
+  const axisAdd = (p1: tuple, p2: tuple): tuple =>
+    newTuple(p1.first + p2.first, p1.second + p2.second)
+
+  const axisEq = (p1: tuple, p2: tuple): boolean =>
+    p1.first === p2.first && p1.second === p2.second
+
   const sourceDestinationCheck = (): boolean =>
-    source.first === -1 ||
-    source.second === -1 ||
-    destination.first === -1 ||
-    destination.second === -1
+    axisDefaultCheck(source) || axisDefaultCheck(destination)
 
   const reset = () => {
-    setVisited(new Array(ROW).fill(false).map(() => new Array(COL).fill(false)))
-    setSouce({
-      first: -1,
-      second: -1,
-    })
-    setDestination({
-      first: -1,
-      second: -1,
-    })
+    setVisited(graphDefault)
+    setSouce(axisDefault)
+    setDestination(axisDefault)
+  }
+
+  const visitNode = (axis: tuple): boolean => {
+    let x = axis.first
+    let y = axis.second
+
+    let cond = x < ROW
+      && y < COL
+      && x >= 0
+      && y >= 0
+    let __visit = cond && visited[x][y]
+    
+    if(!__visit && cond) {
+      let vis = visited
+      vis[x][y] = true
+      setVisited(vis)
+      return true
+    }
+    return false
   }
 
   const BreathFirstSearch = async () => {
     const directions = [
-      [-1, 0],
-      [0, 1],
-      [1, 0],
-      [0, -1],
-    ]
+      newTuple(-1, 0),
+      newTuple(0, 1),
+      newTuple(1, 0),
+      newTuple(0, -1)]
 
     let q: [tuple] = [source]
-    let vis = visited
-    vis[q[0].first][q[0].second] = true
-    setVisited(vis)
+    setVisited(graphDefault)
+    visitNode(source)
 
-    while (q.length > 0) {
-      let top = q.at(0)
+    while(true) {
+      let top = q[0]
       q.shift()
 
-      if (top) {
-        for (let dir of directions) {
-          let dx: number = dir[0] + top?.first,
-            dy: number = dir[1] + top?.second
+      if (!top)
+        return
 
-          if (dx >= 0 && dy >= 0 && dx < ROW && dy < COL) {
-            if (visited[dx][dy]) {
-              continue
-            }
+      for (let dir of directions) {
 
-            setCurrent({
-              first: dx,
-              second: dy,
-            })
+        let now: tuple =  axisAdd(top, dir)
+        if (!visitNode(now))
+          continue
+        
+        setCurrent(now)
+        q.push(now)
+        await sleep(speed)
 
-            q.push({ first: dx, second: dy })
-            await sleep(speed)
-
-            let vis = visited
-            vis[dx][dy] = true
-            setVisited(vis)
-
-            if (dx === destination.first && dy === destination.second) {
-              console.log(dx, dy)
-              return
-            }
-          }
-        }
-      }
-
-      console.log(q)
+        if (axisEq(now, destination))
+          return;
     }
   }
+}
 
   return (
     <>
