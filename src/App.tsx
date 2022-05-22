@@ -16,7 +16,7 @@ let ROW: number = 26
 let COL: number = 60
 
 const axisDefault: tuple = { first: -1, second: -1 }
-const clog = (data: any, cond: boolean) => (cond && console.log(data)) || cond
+// const clog = (data: any, cond: boolean) => (cond && console.log(data)) || cond
 const graphDefault = new Array(ROW).fill(false).map(() => new Array(COL).fill(false))
 
 function Arena() {
@@ -113,9 +113,7 @@ const AlgoLib: { [index: string]: Lib } = {
   bfs: {
     name: 'Breadth First Search',
     theory:
-      'Breadth First Search use a technique that visits \
-      the adjacent nodes of nodes to find the path. It \
-      is mainly used to find shortest distance between two points.',
+      'Breadth First Search use a technique that visits the adjacent nodes of nodes to find the path. It is mainly used to find shortest distance between two points.',
     key: 'bfs',
     exec: () => BreathFirstSearch()
   },
