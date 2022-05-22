@@ -9,6 +9,7 @@ interface Lib {
   name:   string
   theory: string
   key:    string
+  exec: Function
 }
 
 let ROW: number = 26
@@ -18,24 +19,14 @@ const axisDefault: tuple = { first: -1, second: -1 }
 const clog = (data: any, cond: boolean) => (cond && console.log(data)) || cond
 const graphDefault = new Array(ROW).fill(false).map(() => new Array(COL).fill(false))
 
-const AlgoLib: { [index: string]: Lib } = {
-  bfs: {
-    name: 'Breadth First Search',
-    theory:
-      'Breadth First Search use a technique that visits \
-      the adjacent nodes of nodes to find the path. It \
-      is mainly used to find shortest distance between two points.',
-    key: 'bfs',
-  },
-}
-
-function App() {
+function Arena() {
   const [visited, setVisited] = useState<boolean[][]>(graphDefault)
   const [algo, setAlgo]       = useState<string>('bfs')
   const [speed, setSpeed]     = useState<number>(100)
   const [current, setCurrent] = useState<tuple>(axisDefault)
   const [source, setSouce]    = useState<tuple>(axisDefault)
   const [destination, setDestination] = useState<tuple>(axisDefault)
+  const [trigger, setTrigger] = useState<boolean>(false)
 
   const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -59,6 +50,7 @@ function App() {
     setVisited(graphDefault)
     setSouce(axisDefault)
     setDestination(axisDefault)
+    setTrigger(false)
   }
 
   const visitNode = (axis: tuple): boolean => {
@@ -85,7 +77,8 @@ function App() {
       newTuple(-1, 0),
       newTuple(0, 1),
       newTuple(1, 0),
-      newTuple(0, -1)]
+      newTuple(0, -1)
+    ]
 
     let q: [tuple] = [source]
     setVisited(graphDefault)
@@ -108,17 +101,31 @@ function App() {
         q.push(now)
         await sleep(speed)
 
-        if (axisEq(now, destination))
+        if (axisEq(now, destination)){
+          setTrigger(true);
           return;
+        }
     }
   }
+}
+
+const AlgoLib: { [index: string]: Lib } = {
+  bfs: {
+    name: 'Breadth First Search',
+    theory:
+      'Breadth First Search use a technique that visits \
+      the adjacent nodes of nodes to find the path. It \
+      is mainly used to find shortest distance between two points.',
+    key: 'bfs',
+    exec: () => BreathFirstSearch()
+  },
 }
 
   return (
     <>
       <div className="flex flex-row w-full items-center p-4 justify-between h-14 text-white bg-gray-800 absolute z-50 top-0">
         <h1 className="text-white text-xl font-nerd font-bold">
-          Algo Visalizers
+          PathViz
         </h1>
         <div className="flex flex-row">
           <div className="select-wrapper">
@@ -142,9 +149,7 @@ function App() {
                 : 'opacity-40'
             } bg-green-600 text-md rounded-lg font-nerd `}
             disabled={sourceDestinationCheck()}
-            onClick={() => {
-              BreathFirstSearch()
-            }}
+            onClick={() => AlgoLib[algo].exec()}
           >
             Visualize
           </button>
@@ -224,12 +229,17 @@ function App() {
                         setSouce({ first: i1, second: i2 })
                       } else if (
                         destination.first === -1 &&
-                        destination.second === -1
+                        destination.second === -1 && 
+                        (source.first !== i1 || source.second !== i2)
                       ) {
                         setDestination({ first: i1, second: i2 })
                       }
                     }}
                   >
+                    {trigger && destination.first === i1 && destination.second === i2 && 
+                    <div className='absolute top-10 px-4 py-2 -right-12 animate-bounce w-32 bg-blue-600 rounded-lg text-white'>
+                      <p className="font-nerd font-bold text-center" style={{fontSize: 12}}>Node Found!</p>
+                    </div>}
                     <p
                       className={`${
                         destination.first === i1 && destination.second === i2
@@ -261,4 +271,4 @@ function App() {
   )
 }
 
-export default App
+export default Arena
