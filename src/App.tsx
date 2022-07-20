@@ -211,7 +211,7 @@ function Arena() {
   return (
     <>
       <div className="flex flex-row w-full items-center p-4 justify-between h-14 text-white bg-gray-800 absolute z-50 top-0">
-        <h1 className="text-white text-xl font-nerd font-bold">PathViz</h1>
+        <h1 className="text-white text-xl font-nerd font-bold">Algo Arena</h1>
         <div className="flex flex-row">
           <div className="select-wrapper">
             <select
