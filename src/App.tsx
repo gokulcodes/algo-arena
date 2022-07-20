@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface tuple {
   first:  number
@@ -18,6 +18,7 @@ let COL: number = 60
 const axisDefault: tuple = { first: -1, second: -1 }
 // const clog = (data: any, cond: boolean) => (cond && console.log(data)) || cond
 const graphDefault = new Array(ROW).fill(false).map(() => new Array(COL).fill(false))
+const graphDefault2 = new Array(ROW).fill(false).map(() => new Array(COL).fill(false))
 
 function Arena() {
   const [visited, setVisited] = useState<boolean[][]>(graphDefault)
@@ -27,6 +28,7 @@ function Arena() {
   const [source, setSouce]    = useState<tuple>(axisDefault)
   const [destination, setDestination] = useState<tuple>(axisDefault)
   const [trigger, setTrigger] = useState<boolean>(false)
+  const [finalPath, setFinalPath] = useState<boolean[][]>(graphDefault2)
 
   const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -74,10 +76,10 @@ function Arena() {
 
   const BreathFirstSearch = async () => {
     const directions = [
-      newTuple(-1, 0),
       newTuple(0, 1),
       newTuple(1, 0),
-      newTuple(0, -1)
+      newTuple(0, -1),
+      newTuple(-1, 0),
     ]
 
     let q: [tuple] = [source]
@@ -103,6 +105,7 @@ function Arena() {
 
         if (axisEq(now, destination)){
           setTrigger(true);
+          finalVis()
           return;
         }
     }
@@ -117,6 +120,39 @@ const AlgoLib: { [index: string]: Lib } = {
     key: 'bfs',
     exec: () => BreathFirstSearch()
   },
+}
+
+const finalVis = async () => {
+  
+  let rowDir = source.first <= destination.first ? 1 : -1, colDir = source.second <= destination.second ? 1 : -1;
+  let sr = source.first, dr = destination.first, sc = source.second, dc = destination.second;
+
+  while(sr !== dr){
+    let visual = finalPath;
+    setCurrent({ first: sr, second: source.second })
+    visual[sr][source.second] = true;
+    setFinalPath(visual);
+    sr+=rowDir
+    await sleep(speed)
+  }
+
+  while(sc !== dc + colDir){
+    let visual = finalPath;
+    setCurrent({ first: destination.first, second: sc })
+    visual[destination.first][sc] = true;
+    setFinalPath(visual);
+    sc+=colDir
+    await sleep(speed)
+  }
+
+  // for(let i = source.second; i <= destination.second; i+=colDir){
+  //   let visual = finalPath;
+  //   setCurrent({ first: destination.first, second: i })
+  //   visual[destination.first][i] = true;
+  //   setFinalPath(visual);
+  //   await sleep(speed)
+  // }
+  
 }
 
   return (
@@ -147,7 +183,10 @@ const AlgoLib: { [index: string]: Lib } = {
                 : 'opacity-40'
             } bg-green-600 text-md rounded-lg font-nerd `}
             disabled={sourceDestinationCheck()}
-            onClick={() => AlgoLib[algo].exec()}
+            onClick={() => 
+              // finalVis()
+              AlgoLib[algo].exec()
+            }
           >
             Visualize
           </button>
@@ -161,7 +200,7 @@ const AlgoLib: { [index: string]: Lib } = {
                 setSpeed(Number(e.target.value))
               }}
             >
-              <option className="font-nerd" value="100">
+              <option className="font-nerd" value="1000">
                 Slow
               </option>
               <option className="font-nerd" value="50">
@@ -213,9 +252,9 @@ const AlgoLib: { [index: string]: Lib } = {
                     className={`w-6 h-6 cursor-pointer flex items-center justify-center ${
                       current.first === i1 && current.second === i2
                         ? 'bg-yellow-400 scale-150 z-50'
-                        : visited[i1][i2]
-                        ? 'bg-gray-600 border-[1px] border-gray-800 animate-opac'
-                        : 'border-[1px] border-gray-700'
+                        : visited[i1][i2] && finalPath[i1][i2] ? 
+                        'bg-green-600 border-[1px] border-gray-800 animate-opac' :
+                        visited[i1][i2] ? "bg-gray-600 border-[1px] border-gray-800 animate-opac" : 'border-[1px] border-gray-700'
                     } ${
                       (source.first === i1 && source.second === i2) ||
                       (destination.first === i1 && destination.second === i2)
@@ -236,7 +275,7 @@ const AlgoLib: { [index: string]: Lib } = {
                   >
                     {trigger && destination.first === i1 && destination.second === i2 && 
                     <div className='absolute top-10 px-4 py-2 -right-12 animate-bounce w-32 bg-blue-600 rounded-lg text-white'>
-                      <p className="font-nerd font-bold text-center" style={{fontSize: 12}}>Node Found!</p>
+                      <p className="font-nerd font-bold text-center" style={{fontSize: 12}}>Path Found!</p>
                     </div>}
                     <p
                       className={`${
