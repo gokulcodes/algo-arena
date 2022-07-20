@@ -1,5 +1,8 @@
 import { useState } from 'react'
+import useSound from 'use-sound'
 
+const BEEP = require('./assets/beep.mp3')
+const FOUND = require('./assets/found.mp3')
 interface tuple {
   first: number
   second: number
@@ -33,6 +36,9 @@ function Arena() {
   const [destination, setDestination] = useState<tuple>(axisDefault)
   const [trigger, setTrigger] = useState<boolean>(false)
   const [finalPath, setFinalPath] = useState<boolean[][]>(graphDefault2)
+  const [currentAudio, setCurrentAudio] = useState(BEEP)
+
+  const [play] = useSound(currentAudio)
 
   const sleep = (ms: number) =>
     new Promise((resolve) => setTimeout(resolve, ms))
@@ -99,16 +105,61 @@ function Arena() {
         if (!visitNode(now)) continue
 
         setCurrent(now)
+        play()
         q.push(now)
         await sleep(speed)
 
         if (axisEq(now, destination)) {
-          setTrigger(true)
+          setCurrentAudio(FOUND)
           finalVis()
           return
         }
       }
     }
+  }
+
+  const DepthFirstSearch = async () => {
+    const directions = [
+      newTuple(0, 1),
+      newTuple(1, 0),
+      newTuple(0, -1),
+      newTuple(-1, 0),
+    ]
+
+    setVisited(graphDefault)
+    visitNode(source)
+
+    const core = async (node: tuple) => {
+      await sleep(speed)
+
+      if (axisEq(node, destination)) {
+        setCurrentAudio(FOUND)
+        finalVis()
+        return
+      }
+
+      let now: tuple = newTuple(-1, -1)
+
+      for (let dir of directions) {
+        let curr: tuple = axisAdd(node, dir)
+        if (
+          curr.first < ROW &&
+          curr.second < COL &&
+          curr.first >= 0 &&
+          curr.second >= 0
+        ) {
+          if (!visitNode(curr)) continue
+          now = curr
+          break
+        }
+      }
+
+      play()
+      setCurrent(now)
+      core(now)
+    }
+
+    core(source)
   }
 
   const AlgoLib: { [index: string]: Lib } = {
@@ -118,6 +169,13 @@ function Arena() {
         'Breadth First Search use a technique that visits the adjacent nodes of nodes to find the path. It is mainly used to find shortest distance between two points.',
       key: 'bfs',
       exec: () => BreathFirstSearch(),
+    },
+    dfs: {
+      name: 'Depth First Search',
+      theory:
+        'Depth First Search use a technique of breaking the problem deeper and deeper and find the best possible result. It can be easily acheived with the help of Recursion! ',
+      key: 'dfs',
+      exec: () => DepthFirstSearch(),
     },
   }
 
@@ -146,6 +204,8 @@ function Arena() {
       sc += colDir
       await sleep(speed)
     }
+    setTrigger(true)
+    play()
   }
 
   return (
@@ -243,7 +303,7 @@ function Arena() {
                     className={`w-6 h-6 cursor-pointer flex items-center justify-center ${
                       current.first === i1 && current.second === i2
                         ? 'bg-yellow-400 scale-150 z-50'
-                        : visited[i1][i2] && finalPath[i1][i2]
+                        : finalPath[i1][i2]
                         ? 'bg-green-600 border-[1px] border-gray-800 animate-opac'
                         : visited[i1][i2]
                         ? 'bg-gray-600 border-[1px] border-gray-800 animate-opac'
