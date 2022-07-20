@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 interface tuple {
-  first:  number
+  first: number
   second: number
 }
 
 interface Lib {
-  name:   string
+  name: string
   theory: string
-  key:    string
+  key: string
   exec: Function
 }
 
@@ -17,20 +17,25 @@ let COL: number = 60
 
 const axisDefault: tuple = { first: -1, second: -1 }
 // const clog = (data: any, cond: boolean) => (cond && console.log(data)) || cond
-const graphDefault = new Array(ROW).fill(false).map(() => new Array(COL).fill(false))
-const graphDefault2 = new Array(ROW).fill(false).map(() => new Array(COL).fill(false))
+const graphDefault = new Array(ROW)
+  .fill(false)
+  .map(() => new Array(COL).fill(false))
+const graphDefault2 = new Array(ROW)
+  .fill(false)
+  .map(() => new Array(COL).fill(false))
 
 function Arena() {
   const [visited, setVisited] = useState<boolean[][]>(graphDefault)
-  const [algo, setAlgo]       = useState<string>('bfs')
-  const [speed, setSpeed]     = useState<number>(100)
+  const [algo, setAlgo] = useState<string>('bfs')
+  const [speed, setSpeed] = useState<number>(100)
   const [current, setCurrent] = useState<tuple>(axisDefault)
-  const [source, setSouce]    = useState<tuple>(axisDefault)
+  const [source, setSouce] = useState<tuple>(axisDefault)
   const [destination, setDestination] = useState<tuple>(axisDefault)
   const [trigger, setTrigger] = useState<boolean>(false)
   const [finalPath, setFinalPath] = useState<boolean[][]>(graphDefault2)
 
-  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+  const sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms))
 
   const newTuple = (fst: number, snd: number): tuple => {
     return { first: fst, second: snd }
@@ -59,13 +64,10 @@ function Arena() {
     let x = axis.first
     let y = axis.second
 
-    let cond = x < ROW
-      && y < COL
-      && x >= 0
-      && y >= 0
+    let cond = x < ROW && y < COL && x >= 0 && y >= 0
     let __visit = cond && visited[x][y]
-    
-    if(!__visit && cond) {
+
+    if (!__visit && cond) {
       let vis = visited
       vis[x][y] = true
       setVisited(vis)
@@ -86,81 +88,70 @@ function Arena() {
     setVisited(graphDefault)
     visitNode(source)
 
-    while(true) {
+    while (true) {
       let top = q[0]
       q.shift()
 
-      if (!top)
-        return
+      if (!top) return
 
       for (let dir of directions) {
+        let now: tuple = axisAdd(top, dir)
+        if (!visitNode(now)) continue
 
-        let now: tuple =  axisAdd(top, dir)
-        if (!visitNode(now))
-          continue
-        
         setCurrent(now)
         q.push(now)
         await sleep(speed)
 
-        if (axisEq(now, destination)){
-          setTrigger(true);
+        if (axisEq(now, destination)) {
+          setTrigger(true)
           finalVis()
-          return;
+          return
         }
+      }
     }
   }
-}
 
-const AlgoLib: { [index: string]: Lib } = {
-  bfs: {
-    name: 'Breadth First Search',
-    theory:
-      'Breadth First Search use a technique that visits the adjacent nodes of nodes to find the path. It is mainly used to find shortest distance between two points.',
-    key: 'bfs',
-    exec: () => BreathFirstSearch()
-  },
-}
-
-const finalVis = async () => {
-  
-  let rowDir = source.first <= destination.first ? 1 : -1, colDir = source.second <= destination.second ? 1 : -1;
-  let sr = source.first, dr = destination.first, sc = source.second, dc = destination.second;
-
-  while(sr !== dr){
-    let visual = finalPath;
-    setCurrent({ first: sr, second: source.second })
-    visual[sr][source.second] = true;
-    setFinalPath(visual);
-    sr+=rowDir
-    await sleep(speed)
+  const AlgoLib: { [index: string]: Lib } = {
+    bfs: {
+      name: 'Breadth First Search',
+      theory:
+        'Breadth First Search use a technique that visits the adjacent nodes of nodes to find the path. It is mainly used to find shortest distance between two points.',
+      key: 'bfs',
+      exec: () => BreathFirstSearch(),
+    },
   }
 
-  while(sc !== dc + colDir){
-    let visual = finalPath;
-    setCurrent({ first: destination.first, second: sc })
-    visual[destination.first][sc] = true;
-    setFinalPath(visual);
-    sc+=colDir
-    await sleep(speed)
-  }
+  const finalVis = async () => {
+    let rowDir = source.first <= destination.first ? 1 : -1,
+      colDir = source.second <= destination.second ? 1 : -1
+    let sr = source.first,
+      dr = destination.first,
+      sc = source.second,
+      dc = destination.second
 
-  // for(let i = source.second; i <= destination.second; i+=colDir){
-  //   let visual = finalPath;
-  //   setCurrent({ first: destination.first, second: i })
-  //   visual[destination.first][i] = true;
-  //   setFinalPath(visual);
-  //   await sleep(speed)
-  // }
-  
-}
+    while (sr !== dr) {
+      let visual = finalPath
+      setCurrent({ first: sr, second: source.second })
+      visual[sr][source.second] = true
+      setFinalPath(visual)
+      sr += rowDir
+      await sleep(speed)
+    }
+
+    while (sc !== dc + colDir) {
+      let visual = finalPath
+      setCurrent({ first: destination.first, second: sc })
+      visual[destination.first][sc] = true
+      setFinalPath(visual)
+      sc += colDir
+      await sleep(speed)
+    }
+  }
 
   return (
     <>
       <div className="flex flex-row w-full items-center p-4 justify-between h-14 text-white bg-gray-800 absolute z-50 top-0">
-        <h1 className="text-white text-xl font-nerd font-bold">
-          PathViz
-        </h1>
+        <h1 className="text-white text-xl font-nerd font-bold">PathViz</h1>
         <div className="flex flex-row">
           <div className="select-wrapper">
             <select
@@ -183,7 +174,7 @@ const finalVis = async () => {
                 : 'opacity-40'
             } bg-green-600 text-md rounded-lg font-nerd `}
             disabled={sourceDestinationCheck()}
-            onClick={() => 
+            onClick={() =>
               // finalVis()
               AlgoLib[algo].exec()
             }
@@ -252,9 +243,11 @@ const finalVis = async () => {
                     className={`w-6 h-6 cursor-pointer flex items-center justify-center ${
                       current.first === i1 && current.second === i2
                         ? 'bg-yellow-400 scale-150 z-50'
-                        : visited[i1][i2] && finalPath[i1][i2] ? 
-                        'bg-green-600 border-[1px] border-gray-800 animate-opac' :
-                        visited[i1][i2] ? "bg-gray-600 border-[1px] border-gray-800 animate-opac" : 'border-[1px] border-gray-700'
+                        : visited[i1][i2] && finalPath[i1][i2]
+                        ? 'bg-green-600 border-[1px] border-gray-800 animate-opac'
+                        : visited[i1][i2]
+                        ? 'bg-gray-600 border-[1px] border-gray-800 animate-opac'
+                        : 'border-[1px] border-gray-700'
                     } ${
                       (source.first === i1 && source.second === i2) ||
                       (destination.first === i1 && destination.second === i2)
@@ -266,17 +259,25 @@ const finalVis = async () => {
                         setSouce({ first: i1, second: i2 })
                       } else if (
                         destination.first === -1 &&
-                        destination.second === -1 && 
+                        destination.second === -1 &&
                         (source.first !== i1 || source.second !== i2)
                       ) {
                         setDestination({ first: i1, second: i2 })
                       }
                     }}
                   >
-                    {trigger && destination.first === i1 && destination.second === i2 && 
-                    <div className='absolute top-10 px-4 py-2 -right-12 animate-bounce w-32 bg-blue-600 rounded-lg text-white'>
-                      <p className="font-nerd font-bold text-center" style={{fontSize: 12}}>Path Found!</p>
-                    </div>}
+                    {trigger &&
+                      destination.first === i1 &&
+                      destination.second === i2 && (
+                        <div className="absolute top-10 px-4 py-2 -right-12 animate-bounce w-32 bg-blue-600 rounded-lg text-white">
+                          <p
+                            className="font-nerd font-bold text-center"
+                            style={{ fontSize: 12 }}
+                          >
+                            Path Found!
+                          </p>
+                        </div>
+                      )}
                     <p
                       className={`${
                         destination.first === i1 && destination.second === i2
