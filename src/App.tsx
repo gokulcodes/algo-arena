@@ -141,6 +141,7 @@ function Arena() {
       let now: tuple = newTuple(-1, -1)
 
       for (let dir of directions) {
+        if(destination.first < node.first && dir.first > 0) continue
         let curr: tuple = axisAdd(node, dir)
         if (
           curr.first < ROW &&
