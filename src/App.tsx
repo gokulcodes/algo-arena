@@ -30,7 +30,7 @@ const graphDefault2 = new Array(ROW)
 function Arena() {
   const [visited, setVisited] = useState<boolean[][]>(graphDefault)
   const [algo, setAlgo] = useState<string>('bfs')
-  const [speed, setSpeed] = useState<number>(100)
+  const [speed, setSpeed] = useState<number>(10)
   const [current, setCurrent] = useState<tuple>(axisDefault)
   const [source, setSouce] = useState<tuple>(axisDefault)
   const [destination, setDestination] = useState<tuple>(axisDefault)
@@ -253,14 +253,14 @@ function Arena() {
                   setSpeed(Number(e.target.value))
                 }}
               >
-                <option className="font-nerd" value="1000">
-                  Slow
+                <option className="font-nerd" value="10">
+                  Fast
                 </option>
                 <option className="font-nerd" value="50">
                   Medium
                 </option>
-                <option className="font-nerd" value="10">
-                  Fast
+                <option className="font-nerd" value="1000">
+                  Slow
                 </option>
               </select>
             </div>
