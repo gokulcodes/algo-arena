@@ -211,69 +211,71 @@ function Arena() {
 
   return (
     <>
-      <div className="flex flex-row w-full items-center p-4 justify-between h-14 text-white bg-gray-800 absolute z-50 top-0">
-        <h1 className="text-white text-xl font-nerd font-bold">Algo Arena</h1>
-        <div className="flex flex-row">
-          <div className="select-wrapper">
-            <select
-              defaultValue={algo}
-              className="bg-gray-900 px-4 pr-8 font-nerd rounded-md py-2 mr-2"
-              onChange={(e) => {
-                setAlgo(e.target.value)
-              }}
+      <div className="flex items-center justify-center h-14 text-white bg-gray-800 absolute z-50 top-0 w-full p-4">
+        <div className='flex flex-row w-full items-center justify-between mx-auto max-w-screen-lg'>
+          <h1 className="text-white text-xl font-nerd font-bold">Algo Arena</h1>
+          <div className="flex flex-row">
+            <div className="select-wrapper">
+              <select
+                defaultValue={algo}
+                className="bg-gray-900 px-4 pr-8 font-nerd rounded-md py-2 mr-2"
+                onChange={(e) => {
+                  setAlgo(e.target.value)
+                }}
+              >
+                <option value="bfs">Breadth First Search</option>
+                <option value="dfs">Depth First Search</option>
+                <option value="a*">A*</option>
+                <option value="dijikstra">Dijikstra</option>
+              </select>
+            </div>
+            <button
+              className={`px-4 py-2 ${
+                !sourceDestinationCheck()
+                  ? 'opacity-100 animate-pop'
+                  : 'opacity-40'
+              } bg-green-600 text-md rounded-lg font-nerd `}
+              disabled={sourceDestinationCheck()}
+              onClick={() =>
+                // finalVis()
+                AlgoLib[algo].exec()
+              }
             >
-              <option value="bfs">Breadth First Search</option>
-              <option value="dfs">Depth First Search</option>
-              <option value="a*">A*</option>
-              <option value="dijikstra">Dijikstra</option>
-            </select>
+              Visualize
+            </button>
           </div>
-          <button
-            className={`px-4 py-2 ${
-              !sourceDestinationCheck()
-                ? 'opacity-100 animate-pop'
-                : 'opacity-40'
-            } bg-green-600 text-md rounded-lg font-nerd `}
-            disabled={sourceDestinationCheck()}
-            onClick={() =>
-              // finalVis()
-              AlgoLib[algo].exec()
-            }
-          >
-            Visualize
-          </button>
-        </div>
-        <div className="flex flex-row items-center justify-center">
-          <div className="select-wrapper">
-            <select
-              defaultValue={speed}
-              className="bg-black px-4 pr-8 rounded-md py-2 mr-2 font-nerd"
-              onChange={(e) => {
-                setSpeed(Number(e.target.value))
-              }}
+          <div className="flex flex-row items-center justify-center">
+            <div className="select-wrapper">
+              <select
+                defaultValue={speed}
+                className="bg-black px-4 pr-8 rounded-md py-2 mr-2 font-nerd"
+                onChange={(e) => {
+                  setSpeed(Number(e.target.value))
+                }}
+              >
+                <option className="font-nerd" value="1000">
+                  Slow
+                </option>
+                <option className="font-nerd" value="50">
+                  Medium
+                </option>
+                <option className="font-nerd" value="10">
+                  Fast
+                </option>
+              </select>
+            </div>
+            <button
+              className="px-4 py-2 bg-black text-md rounded-lg font-nerd"
+              onClick={() => reset()}
             >
-              <option className="font-nerd" value="1000">
-                Slow
-              </option>
-              <option className="font-nerd" value="50">
-                Medium
-              </option>
-              <option className="font-nerd" value="10">
-                Fast
-              </option>
-            </select>
+              Clear
+            </button>
           </div>
-          <button
-            className="px-4 py-2 bg-black text-md rounded-lg font-nerd"
-            onClick={() => reset()}
-          >
-            Clear
-          </button>
         </div>
       </div>
 
       <div
-        className="flex flex-col items-center justify-end w-full bg-gray-900 overflow-hidden h-full"
+        className="flex flex-col items-center justify-center w-full bg-gray-900 overflow-hidden h-full"
         style={{ height: '100vh' }}
       >
         {AlgoLib?.[algo] !== undefined ? (
